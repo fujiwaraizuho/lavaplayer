@@ -13,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -123,13 +124,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             httpPost.addHeader("Connection", "keep-alive");
             httpPost.addHeader("DNT", "1");
             httpPost.setHeader("Content-type", "application/json");
-            httpPost.setHeader("Sec-Fetch-Dest", "empty");
-            httpPost.setHeader("Sec-Fetch-Mode", "cors");
-            httpPost.setHeader("Sec-Fetch-Site", "cross-site");
             httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
-            httpPost.setHeader("sec-ch-ua", "\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
-            httpPost.setHeader("sec-ch-ua-mobile", "?0");
-            httpPost.setHeader("sec-ch-ua-platform", "Windows");
             httpPost.setHeader("Host", "api.dmc.nico");
             httpPost.setHeader("Origin", "https://www.nicovideo.jp");
             httpPost.setHeader("Referer", "https://www.nicovideo.jp/");
@@ -138,7 +133,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
                 int statusCodePost = postresponse.getStatusLine().getStatusCode();
                 if (statusCodePost != 201) {
-                    log.info(postresponse.getEntity().toString());
+                    log.info(EntityUtils.toString(postresponse.getEntity()));
                     throw new IOException("動画の配信リクエスト時にエラー: " + statusCodePost);
                 }
 
