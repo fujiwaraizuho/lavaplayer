@@ -121,8 +121,6 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             httpPost.addHeader("DNT", "1");
             httpPost.addHeader("Connection", "keep-alive");
 
-
-
             JsonNode postJsonNode;
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
                 int statusCodePost = postresponse.getStatusLine().getStatusCode();
