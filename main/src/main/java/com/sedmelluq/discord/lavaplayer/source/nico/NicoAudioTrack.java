@@ -1,7 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.source.nico;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegAudioTrack;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.source.nico.objects.video.Session;
+import com.sedmelluq.discord.lavaplayer.source.nico.objects.video.Watch;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.PersistentHttpStream;
@@ -9,89 +13,142 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.convertToMapLayout;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLDecoder;
 
 /**
  * Audio track that handles processing NicoNico tracks.
  */
 public class NicoAudioTrack extends DelegatedAudioTrack {
-  private static final Logger log = LoggerFactory.getLogger(NicoAudioTrack.class);
+    private static final Logger log = LoggerFactory.getLogger(NicoAudioTrack.class);
 
-  private final NicoAudioSourceManager sourceManager;
+    private final NicoAudioSourceManager sourceManager;
 
-  /**
-   * @param trackInfo Track info
-   * @param sourceManager Source manager which was used to find this track
-   */
-  public NicoAudioTrack(AudioTrackInfo trackInfo, NicoAudioSourceManager sourceManager) {
-    super(trackInfo);
+    /**
+     * @param trackInfo     Track info
+     * @param sourceManager Source manager which was used to find this track
+     */
+    public NicoAudioTrack(AudioTrackInfo trackInfo, NicoAudioSourceManager sourceManager) {
+        super(trackInfo);
 
-    this.sourceManager = sourceManager;
-  }
-
-  @Override
-  public void process(LocalAudioTrackExecutor localExecutor) throws Exception {
-    sourceManager.checkLoggedIn();
-
-    try (HttpInterface httpInterface = sourceManager.getHttpInterface()) {
-      loadVideoMainPage(httpInterface);
-      String playbackUrl = loadPlaybackUrl(httpInterface);
-
-      log.debug("Starting NicoNico track from URL: {}", playbackUrl);
-
-      try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
-        processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
-      }
+        this.sourceManager = sourceManager;
     }
-  }
 
-  private void loadVideoMainPage(HttpInterface httpInterface) throws IOException {
-    HttpGet request = new HttpGet("http://www.nicovideo.jp/watch/" + trackInfo.identifier);
+    @Override
+    public void process(LocalAudioTrackExecutor localExecutor) throws Exception {
+        sourceManager.checkLoggedIn();
 
-    try (CloseableHttpResponse response = httpInterface.execute(request)) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Unexpected status code from video main page: " + statusCode);
-      }
+        try (HttpInterface httpInterface = sourceManager.getHttpInterface()) {
+            loadVideoMainPage(httpInterface);
+            String playbackUrl = loadPlaybackUrl(httpInterface);
 
-      EntityUtils.consume(response.getEntity());
+            log.debug("URLからニコニコ動画を開始： {}", playbackUrl);
+
+            try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
+                processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
+            }
+        }
     }
-  }
 
-  private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
-    HttpGet request = new HttpGet("http://flapi.nicovideo.jp/api/getflv/" + trackInfo.identifier);
+    private void loadVideoMainPage(HttpInterface httpInterface) throws IOException {
+        HttpGet request = new HttpGet("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
 
-    try (CloseableHttpResponse response = httpInterface.execute(request)) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Unexpected status code from playback parameters page: " + statusCode);
-      }
+        try (CloseableHttpResponse response = httpInterface.execute(request)) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (!HttpClientTools.isSuccessWithContent(statusCode)) {
+                throw new IOException("Unexpected status code from video main page: " + statusCode);
+            }
 
-      String text = EntityUtils.toString(response.getEntity());
-      Map<String, String> format = convertToMapLayout(URLEncodedUtils.parse(text, StandardCharsets.UTF_8));
-
-      return format.get("url");
+            EntityUtils.consume(response.getEntity());
+        }
     }
-  }
 
-  @Override
-  protected AudioTrack makeShallowClone() {
-    return new NicoAudioTrack(trackInfo, sourceManager);
-  }
+    private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
+        HttpGet request = new HttpGet("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
+        log.trace("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
 
-  @Override
-  public AudioSourceManager getSourceManager() {
-    return sourceManager;
-  }
+        try (CloseableHttpResponse response = httpInterface.execute(request)) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (!HttpClientTools.isSuccessWithContent(statusCode)) {
+                throw new IOException("Unexpected status code from playback parameters page: " + statusCode);
+            }
+            Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
+            log.trace(document.toString());
+            String json = document.select("div#js-initial-watch-data").attr("data-api-data");
+
+            ObjectMapper om = new ObjectMapper();
+            JsonNode jsonNode = null;
+            JsonNode sessionNode = null;
+
+            jsonNode = om.readTree(URLDecoder.decode(json, "UTF-8"));
+
+            Watch watchObj = om.readValue(URLDecoder.decode(json, "UTF-8"), Watch.class);
+
+            log.trace(watchObj.toString());
+
+            sessionNode = jsonNode.get("media").get("delivery").get("movie").get("session");
+            log.trace("Niconico Session:" + watchObj.getMedia().getDelivery().getMovie().getSession().toString());
+
+            ObjectMapper postom = new ObjectMapper();
+
+            if(watchObj.getViewer().getIsPremium()){
+                log.debug("プレミアムアカウントでニコニコ動画へリクエストします。(ユーザー名:{}, Transfer Preset:{})", watchObj.getViewer().getNickname(), watchObj.getMedia().getDelivery().getMovie().getSession().getTransferPresets().get(0));
+            }
+
+            Session sessionObj = watchObj.getMedia().getDelivery().getMovie().getSession();
+
+            String postJson ="{\"session\":{\"recipe_id\":\"" + sessionObj.getRecipeId() + "\",\"content_id\":\"out1\",\"content_type\":\"movie\",\"content_src_id_sets\":[{\"content_src_ids\":[{\"src_id_to_mux\":{\"video_src_ids\":[\"archive_h264_360p\",\"archive_h264_360p_low\"],\"audio_src_ids\":[\""+ sessionObj.getAudios().get(0) +"\"]}}]}],\"timing_constraint\":\"unlimited\",\"keep_method\":{\"heartbeat\":{\"lifetime\":120000}},\"protocol\":{\"name\":\"http\",\"parameters\":{\"http_parameters\":{\"parameters\":{\"http_output_download_parameters\":{\"use_well_known_port\":\"yes\",\"use_ssl\":\"yes\",\"transfer_preset\":\""+ (sessionObj.getTransferPresets().size() == 0 ? "" :sessionObj.getTransferPresets().get(0)) +"\"}}}}},\"content_uri\":\"\",\"session_operation_auth\":{\"session_operation_auth_by_signature\":{\"token\":" +
+                    sessionNode.get("token").toString()
+                    + ",\"signature\":\"" + sessionObj.getSignature() + "\"}},\"content_auth\":{\"auth_type\":\"ht2\",\"content_key_timeout\":600000,\"service_id\":\"nicovideo\",\"service_user_id\":\"" + sessionObj.getServiceUserId() + "\"},\"client_info\":{\"player_id\":\"" + sessionObj.getPlayerId() + "\"},\"priority\":"+ sessionObj.getPriority() + "}}";
+
+            log.trace("PostJson:" + postJson);
+
+            HttpPost httpPost = new HttpPost(String.format("%s?_format=json", sessionObj.getUrls().get(0).getUrl()));
+            httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
+            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+            httpPost.setHeader("Accept-Language", "ja,en-US;q=0.7,en;q=0.3");
+            httpPost.addHeader("DNT", "1");
+            httpPost.addHeader("Connection", "keep-alive");
+
+
+
+            JsonNode postJsonNode;
+            try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
+                int statusCodePost = postresponse.getStatusLine().getStatusCode();
+                if (statusCodePost != 201) {
+                    throw new IOException("動画の配信リクエスト時にエラー: " + statusCodePost);
+                }
+
+                postJsonNode = postom.readTree(EntityUtils.toString(postresponse.getEntity()));
+            }
+
+            SessionFormat session = new SessionFormat(String.format("https://api.dmc.nico/api/sessions/%s?_format=json&_method=PUT", postJsonNode.get("data").get("session").get("id").textValue()), postJsonNode.get("data").toString());
+            NicoHeartbeatManager.regionSession("https://www.nicovideo.jp/watch/" + trackInfo.identifier,session);
+            log.trace("Session Json: "+postJsonNode.get("data").toString());
+            log.info("URL:" + postJsonNode.get("data").get("session").get("content_uri").textValue());
+            return postJsonNode.get("data").get("session").get("content_uri").textValue();
+        }
+    }
+
+    @Override
+    protected AudioTrack makeShallowClone() {
+        return new NicoAudioTrack(trackInfo, sourceManager);
+    }
+
+    @Override
+    public AudioSourceManager getSourceManager() {
+        return sourceManager;
+    }
+
 }
