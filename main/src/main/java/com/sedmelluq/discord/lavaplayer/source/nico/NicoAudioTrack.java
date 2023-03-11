@@ -112,7 +112,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
                     sessionNode.get("token").toString()
                     + ",\"signature\":\"" + sessionObj.getSignature() + "\"}},\"content_auth\":{\"auth_type\":\"ht2\",\"content_key_timeout\":600000,\"service_id\":\"nicovideo\",\"service_user_id\":\"" + sessionObj.getServiceUserId() + "\"},\"client_info\":{\"player_id\":\"" + sessionObj.getPlayerId() + "\"},\"priority\":"+ sessionObj.getPriority() + "}}";
 
-            log.info("PostJson:" + postJson);
+            log.info("PostJson:" + postJson + "URL:" + sessionObj.getUrls().get(0).getUrl());
 
             HttpPost httpPost = new HttpPost(String.format("%s?_format=json", sessionObj.getUrls().get(0).getUrl()));
             httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
