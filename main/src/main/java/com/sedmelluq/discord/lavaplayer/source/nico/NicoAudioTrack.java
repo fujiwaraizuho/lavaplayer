@@ -53,7 +53,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             loadVideoMainPage(httpInterface);
             String playbackUrl = loadPlaybackUrl(httpInterface);
 
-            log.debug("URLからニコニコ動画を開始： {}", playbackUrl);
+            log.info("URLからニコニコ動画を開始： {}", playbackUrl);
 
             try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
                 processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
@@ -136,7 +136,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             SessionFormat session = new SessionFormat(String.format("https://api.dmc.nico/api/sessions/%s?_format=json&_method=PUT", postJsonNode.get("data").get("session").get("id").textValue()), postJsonNode.get("data").toString());
             NicoHeartbeatManager.regionSession("https://www.nicovideo.jp/watch/" + trackInfo.identifier,session);
-            log.trace("Session Json: "+postJsonNode.get("data").toString());
+            log.info("Session Json: "+postJsonNode.get("data").toString());
             log.info("URL:" + postJsonNode.get("data").get("session").get("content_uri").textValue());
             return postJsonNode.get("data").get("session").get("content_uri").textValue();
         }

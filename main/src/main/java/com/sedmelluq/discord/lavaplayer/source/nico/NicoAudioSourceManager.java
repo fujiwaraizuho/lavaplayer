@@ -176,6 +176,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
           }
 
           loggedIn.set(true);
+          
         }
       } catch (IOException e) {
         throw new FriendlyException("Exception when trying to log into NicoNico", SUSPICIOUS, e);
