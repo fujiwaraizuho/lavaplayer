@@ -117,7 +117,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             HttpPost httpPost = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
             httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
             httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
-            httpPost.setHeader("Accept-Language", "ja,en-US;q=0.7,en;q=0.3");
+            httpPost.setHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
             httpPost.addHeader("DNT", "1");
             httpPost.addHeader("Connection", "keep-alive");
 
