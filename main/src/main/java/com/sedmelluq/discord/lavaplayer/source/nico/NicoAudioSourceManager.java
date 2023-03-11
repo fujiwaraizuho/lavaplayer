@@ -105,7 +105,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
       String thumbnailUrl = element.select("thumbnail_url").first().text();
       long duration = DataFormatTools.durationTextToMillis(element.select("length").first().text());
 
-      return new NicoAudioTrack(new AudioTrackInfo(title,
+      /*return new NicoAudioTrack(new AudioTrackInfo(title,
           uploader,
           duration,
           videoId,
@@ -113,7 +113,8 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
           getWatchUrl(videoId),
           thumbnailUrl,
           null
-      ), this);
+      ), this);*/
+        return new NicoAudioTrack(new AudioTrackInfo(title, uploader, duration, videoId, false, getWatchUrl(videoId)), this);
     }
 
     return null;
