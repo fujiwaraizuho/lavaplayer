@@ -76,7 +76,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
     private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
         HttpGet request = new HttpGet("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
-        log.trace("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
+        log.info("https://www.nicovideo.jp/watch/" + trackInfo.identifier);
 
         try (CloseableHttpResponse response = httpInterface.execute(request)) {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -84,7 +84,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
                 throw new IOException("Unexpected status code from playback parameters page: " + statusCode);
             }
             Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
-            log.trace(document.toString());
+            log.info(document.toString());
             String json = document.select("div#js-initial-watch-data").attr("data-api-data");
 
             ObjectMapper om = new ObjectMapper();
@@ -95,10 +95,10 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             Watch watchObj = om.readValue(URLDecoder.decode(json, "UTF-8"), Watch.class);
 
-            log.trace(watchObj.toString());
+            log.info(watchObj.toString());
 
             sessionNode = jsonNode.get("media").get("delivery").get("movie").get("session");
-            log.trace("Niconico Session:" + watchObj.getMedia().getDelivery().getMovie().getSession().toString());
+            log.info("Niconico Session:" + watchObj.getMedia().getDelivery().getMovie().getSession().toString());
 
             ObjectMapper postom = new ObjectMapper();
 
@@ -135,7 +135,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
                 int statusCodePost = postresponse.getStatusLine().getStatusCode();
                 if (statusCodePost != 201) {
-                    log.info(postresponse.toString());
+                    log.info(postresponse.getEntity().toString());
                     throw new IOException("動画の配信リクエスト時にエラー: " + statusCodePost);
                 }
 
