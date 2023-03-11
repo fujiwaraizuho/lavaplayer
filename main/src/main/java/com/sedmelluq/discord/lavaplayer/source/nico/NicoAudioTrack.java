@@ -116,10 +116,20 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             HttpPost httpPost = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
             httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
-            httpPost.setHeader("Content-type", "application/json; charset=UTF-8");
+
+            httpPost.addHeader("Accept", "application/json");
+            httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
             httpPost.setHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
-            httpPost.addHeader("DNT", "1");
             httpPost.addHeader("Connection", "keep-alive");
+            httpPost.addHeader("DNT", "1");
+            httpPost.setHeader("Content-type", "application/json");
+            httpPost.setHeader("Sec-Fetch-Dest", "empty");
+            httpPost.setHeader("Sec-Fetch-Mode", "cors");
+            httpPost.setHeader("Sec-Fetch-Site", "cross-site");
+            httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
+            httpPost.setHeader("sec-ch-ua", "\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
+            httpPost.setHeader("sec-ch-ua-mobile", "?0");
+            httpPost.setHeader("sec-ch-ua-platform", "Windows");
 
             JsonNode postJsonNode;
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
