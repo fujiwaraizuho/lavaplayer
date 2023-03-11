@@ -130,6 +130,9 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             httpPost.setHeader("sec-ch-ua", "\"Chromium\";v=\"110\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\"110\"");
             httpPost.setHeader("sec-ch-ua-mobile", "?0");
             httpPost.setHeader("sec-ch-ua-platform", "Windows");
+            httpPost.setHeader("Host", "api.dmc.nico");
+            httpPost.setHeader("Origin", "https://www.nicovideo.jp");
+            httpPost.setHeader("Referer", "https://www.nicovideo.jp/");
 
             JsonNode postJsonNode;
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
