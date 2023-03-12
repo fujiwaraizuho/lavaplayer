@@ -96,10 +96,10 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             Watch watchObj = om.readValue(URLDecoder.decode(json, "UTF-8"), Watch.class);
 
-            log.info(watchObj.toString());
+            log.debug(watchObj.toString());
 
             sessionNode = jsonNode.get("media").get("delivery").get("movie").get("session");
-            log.info("Niconico Session:" + watchObj.getMedia().getDelivery().getMovie().getSession().toString());
+            log.debug("Niconico Session:" + watchObj.getMedia().getDelivery().getMovie().getSession().toString());
 
             ObjectMapper postom = new ObjectMapper();
 
@@ -113,7 +113,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
                     sessionNode.get("token").toString()
                     + ",\"signature\":\"" + sessionObj.getSignature() + "\"}},\"content_auth\":{\"auth_type\":\"ht2\",\"content_key_timeout\":600000,\"service_id\":\"nicovideo\",\"service_user_id\":\"" + sessionObj.getServiceUserId() + "\"},\"client_info\":{\"player_id\":\"" + sessionObj.getPlayerId() + "\"},\"priority\":"+ sessionObj.getPriority() + "}}";
 
-            log.info("PostJson:" + postJson + "URL:" + sessionObj.getUrls().get(0).getUrl());
+            log.debug("PostJson:" + postJson + "URL:" + sessionObj.getUrls().get(0).getUrl());
 
             HttpPost httpPost = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
             httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
