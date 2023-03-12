@@ -61,6 +61,7 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
                 CloseableHttpResponse response = client.execute(httpPost);
 
                 if(response.getStatusLine().getStatusCode() == 404){
+                    log.info("code = " + response.getStatusLine().getStatusCode() + " content = " + EntityUtils.toString(response.getEntity()));
                     remKey.add(entry.getKey());
                     client.close();
                     continue;
@@ -87,12 +88,12 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
 
     public static void regionSession(String url, SessionFormat session){
         sessions.put(url, session);
-        log.debug("ニコニコセッションを追加しました。");
+        log.info("ニコニコセッションを追加しました。");
     }
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        log.debug("セッション削除処理開始");
+        log.info("セッション削除処理開始");
         if(Objects.equals(track.getSourceManager().getSourceName(), "niconico")){
             sessions.remove(track.getInfo().uri);
             log.debug("ニコニコセッションを削除しました。");
@@ -103,7 +104,7 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if(Objects.equals(track.getSourceManager().getSourceName(), "niconico")){
             sessions.remove(track.getInfo().uri);
-            log.debug("ニコニコセッションを削除しました。");
+            log.info("ニコニコセッションを削除しました。");
         }
     }
 }

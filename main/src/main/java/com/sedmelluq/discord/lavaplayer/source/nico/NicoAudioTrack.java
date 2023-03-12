@@ -85,7 +85,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
                 throw new IOException("Unexpected status code from playback parameters page: " + statusCode);
             }
             Document document = Jsoup.parse(EntityUtils.toString(response.getEntity()));
-            log.info(document.toString());
+            log.debug(document.toString());
             String json = document.select("div#js-initial-watch-data").attr("data-api-data");
 
             ObjectMapper om = new ObjectMapper();
