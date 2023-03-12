@@ -99,14 +99,18 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   }
 
   private AudioTrack extractTrackFromXml(String videoId, Document document) {
-    for (Element element : document.select(":root > thumb")) {
-      String uploader = element.select("user_nickname").first().text();
-      String title = element.select("title").first().text();
-      String thumbnailUrl = element.select("thumbnail_url").first().text();
-      long duration = DataFormatTools.durationTextToMillis(element.select("length").first().text());
+      for (Element element : document.select(":root > thumb")) {
+          String uploader;
+          if(videoId.matches("so.*")){
+              uploader = element.select("ch_name").first().text();
+          }else{
+              uploader = element.select("user_nickname").first().text();
+          }
+          String title = element.select("title").first().text();
+          long duration = DataFormatTools.durationTextToMillis(element.select("length").first().text());
 
-      return new NicoAudioTrack(new AudioTrackInfo(title, uploader, duration, videoId, false, getWatchUrl(videoId)), this);
-    }
+          return new NicoAudioTrack(new AudioTrackInfo(title, uploader, duration, videoId, false, getWatchUrl(videoId)), this);
+      }
 
     return null;
   }
