@@ -67,7 +67,7 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
                     continue;
                 }
 
-                log.info("code = " + response.getStatusLine().getStatusCode() + " content = " + EntityUtils.toString(response.getEntity()));
+                log.info("code = " + response.getStatusLine().getStatusCode());
 
                 ObjectMapper om = new ObjectMapper();
                 JsonNode json = null;
