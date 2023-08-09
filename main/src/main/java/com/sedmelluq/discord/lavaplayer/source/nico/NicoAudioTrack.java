@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegAudioTrack;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.nico.objects.video.Session;
 import com.sedmelluq.discord.lavaplayer.source.nico.objects.video.Watch;
+import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.PersistentHttpStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -105,18 +106,19 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             log.debug("PostJson: {} URL: {}", postJson, sessionObj.getUrls().get(0).getUrl());
 
             HttpPost httpPost = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
-            httpPost.setEntity(new StringEntity(postJson, "UTF-8"))
-                            .addHeader("Accept", "application/json")
-            .addHeader("Accept-Encoding", "gzip, deflate, br")
-            .addHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7")
-            .addHeader("Connection", "keep-alive")
-            .addHeader("DNT", "1")
-            .addHeader("Content-type", "application/json")
-            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63")
-            .addHeader("Host", "api.dmc.nico")
-            .addHeader("Origin", "https://www.nicovideo.jp")
-            .addHeader("Referer", "https://www.nicovideo.jp/")
-            .setEntity(new StringEntity(postJson, "UTF-8"));
+
+            httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
+            httpPost.addHeader("Accept", "application/json");
+            httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
+            httpPost.addHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
+            httpPost.addHeader("Connection", "keep-alive");
+            httpPost.addHeader("DNT", "1");
+            httpPost.addHeader("Content-type", "application/json");
+            httpPost.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
+            httpPost.addHeader("Host", "api.dmc.nico");
+            httpPost.addHeader("Origin", "https://www.nicovideo.jp");
+            httpPost.addHeader("Referer", "https://www.nicovideo.jp/");
+            httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
 
             JsonNode postJsonNode;
             try (CloseableHttpResponse postresponse = httpInterface.execute(httpPost)) {
