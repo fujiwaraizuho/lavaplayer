@@ -55,6 +55,9 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
             httpPost.setHeader("Content-type", "application/json");
             httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
             httpPost.setHeader("Host", "api.dmc.nico");
+            httpPost.setHeader("Sec-Fetch-Site", "cross-site");
+            httpPost.setHeader("Sec-Fetch-Mode", "cors");
+            httpPost.setHeader("Sec-Fetch-Dest", "empty");
             httpPost.setHeader("Origin", "https://www.nicovideo.jp");
             httpPost.setHeader("Referer", "https://www.nicovideo.jp/");
             try {
