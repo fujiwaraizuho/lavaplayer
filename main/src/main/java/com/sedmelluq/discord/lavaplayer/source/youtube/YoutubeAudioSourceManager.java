@@ -265,6 +265,18 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     }
 
     @Override
+    public AudioItem playlistMusic(String playlistId, String selectedVideoId) {
+      log.debug("Starting to load playlist with ID {}", playlistId);
+
+      try (HttpInterface httpInterface = getHttpInterface()) {
+        return playlistLoader.load(httpInterface, playlistId, selectedVideoId,
+                YoutubeAudioSourceManager.this::buildTrackFromInfo);
+      } catch (Exception e) {
+        throw ExceptionTools.wrapUnfriendlyExceptions(e);
+      }
+    }
+
+    @Override
     public AudioItem mix(String mixId, String selectedVideoId) {
       log.debug("Starting to load mix with ID {} selected track {}", mixId, selectedVideoId);
 

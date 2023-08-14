@@ -107,7 +107,6 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             HttpPost httpPost = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
 
-            httpPost.setEntity(new StringEntity(postJson, "UTF-8"));
             httpPost.addHeader("Accept", "application/json");
             httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
             httpPost.addHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
@@ -125,7 +124,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
                 int statusCodePost = postresponse.getStatusLine().getStatusCode();
                 if (statusCodePost != 201) {
                     log.info(EntityUtils.toString(postresponse.getEntity()));
-                    throw new IOException("動画の配信リクエスト時にエラー: " + statusCodePost);
+                    throw new IOException("ニコニコ動画へのリクエスト時にエラー: " + statusCodePost);
                 }
                 postJsonNode = om.readTree(EntityUtils.toString(postresponse.getEntity()));
             }
