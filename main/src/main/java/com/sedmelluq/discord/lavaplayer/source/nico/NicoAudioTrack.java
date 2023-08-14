@@ -139,7 +139,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             log.debug("Session Json: {}", postJsonNode.get("data").toString());
             log.debug("URL: {}", contentUri);
 
-            NicoHeartbeatManager.regionSession(contentUri, new SessionFormat("https://api.dmc.nico/api/sessions/" + sessionId + "?_format=json&_method=PUT", postJsonNode.get("data").get("session").toString()));
+            NicoHeartbeatManager.regionSession(contentUri, new SessionFormat("https://api.dmc.nico/api/sessions/" + sessionId + "?_format=json&_method=PUT", postJsonNode.get("data").toString()));
 
             return contentUri;
         }
