@@ -47,11 +47,11 @@ public class NicoHeartbeatManager extends AudioEventAdapter {
             CloseableHttpClient client = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(entry.getValue().getUrl());
             httpPost.setEntity(new StringEntity(entry.getValue().getJson(), "UTF-8"));
-            httpPost.addHeader("Accept", "application/json");
-            httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
+            httpPost.setHeader("Accept", "application/json");
+            httpPost.setHeader("Accept-Encoding", "gzip, deflate, br");
             httpPost.setHeader("Accept-Language", "ja,en;q=0.9,en-GB;q=0.8,en-US;q=0.7");
-            httpPost.addHeader("Connection", "keep-alive");
-            httpPost.addHeader("DNT", "1");
+            httpPost.setHeader("Connection", "keep-alive");
+            httpPost.setHeader("DNT", "1");
             httpPost.setHeader("Content-type", "application/json");
             httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63");
             httpPost.setHeader("Host", "api.dmc.nico");
