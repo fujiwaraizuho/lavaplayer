@@ -5,7 +5,7 @@ plugins {
 }
 
 val moduleName = "lavaplayer"
-version = "1.4.2-cosgy.4"
+version = "1.4.3-cosgy.1"
 
 dependencies {
   api("com.sedmelluq:lava-common:1.1.2")
