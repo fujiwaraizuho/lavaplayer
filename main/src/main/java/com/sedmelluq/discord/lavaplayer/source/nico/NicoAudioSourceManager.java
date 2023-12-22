@@ -85,7 +85,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
 
     private AudioTrack loadTrack(String videoId) {
         try (HttpInterface httpInterface = getHttpInterface()) {
-            try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("http://ext.nicovideo.jp/api/getthumbinfo/" + videoId))) {
+            try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://ext.nicovideo.jp/api/getthumbinfo/" + videoId))) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (!HttpClientTools.isSuccessWithContent(statusCode)) {
                     throw new IOException("Unexpected response code from video info: " + statusCode);
@@ -101,7 +101,13 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
 
     private AudioTrack extractTrackFromXml(String videoId, Document document) {
         for (Element element : document.select(":root > thumb")) {
-            String uploader = element.selectFirst("user_nickname").text();
+
+            String uploader = "";
+            if(videoId.matches("so.*")){
+                uploader = element.select("ch_name").first().text();
+            }else{
+                uploader = element.select("user_nickname").first().text();
+            }
             String title = element.selectFirst("title").text();
             String thumbnailUrl = element.selectFirst("thumbnail_url").text();
             long duration = DataFormatTools.durationTextToMillis(element.selectFirst("length").text());
