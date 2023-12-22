@@ -43,7 +43,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * Audio source manager that implements finding NicoNico tracks based on URL.
  */
 public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigurable {
-    private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:(?:www\\.|sp\\.|)nicovideo\\.jp/watch/|nico\\.ms/)(s[m|o][0-9]+)(?:\\?.*|)$";
+    private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:(?:www\\.|sp\\.|)nicovideo\\.jp/watch/|nico\\.ms/)(sm[0-9]+)(?:\\?.*|)$";
 
     private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
 
