@@ -41,7 +41,7 @@ public class AudioSourceManagers {
         playerManager.registerSourceManager(new BeamAudioSourceManager());
         playerManager.registerSourceManager(new GetyarnAudioSourceManager());
         playerManager.registerSourceManager(new HttpAudioSourceManager(containerRegistry));
-        NicoHeartbeatManager.start();
+        playerManager.registerSourceManager(new NicoAudioSourceManager());
     }
 
     /**

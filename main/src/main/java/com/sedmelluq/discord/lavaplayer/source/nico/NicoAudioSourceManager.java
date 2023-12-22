@@ -4,10 +4,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterfaceManager;
-import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -30,7 +30,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,24 +43,28 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * Audio source manager that implements finding NicoNico tracks based on URL.
  */
 public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigurable {
-    private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:(?:www\\.|sp\\.|)nicovideo\\.jp/watch/|nico\\.ms/)(s[m|o][0-9]+)(?:\\?.*|)$";
+  private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)nicovideo\\.jp/watch/(sm[0-9]+)(?:\\?.*|)$";
 
   private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
 
-  private final String email;
-  private final String password;
   private final HttpInterfaceManager httpInterfaceManager;
   private final AtomicBoolean loggedIn;
 
+  public NicoAudioSourceManager() {
+    this(null, null);
+  }
+
   /**
-   * @param email Site account email
+   * @param email    Site account email
    * @param password Site account password
    */
   public NicoAudioSourceManager(String email, String password) {
-    this.email = email;
-    this.password = password;
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
     loggedIn = new AtomicBoolean();
+    // Log in at the start
+    if (!DataFormatTools.isNullOrEmpty(email) && !DataFormatTools.isNullOrEmpty(password)) {
+      logIn(email,password);
+    }
   }
 
   @Override
@@ -81,8 +84,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   }
 
   private AudioTrack loadTrack(String videoId) {
-    checkLoggedIn();
-
     try (HttpInterface httpInterface = getHttpInterface()) {
       try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("http://ext.nicovideo.jp/api/getthumbinfo/" + videoId))) {
         int statusCode = response.getStatusLine().getStatusCode();
@@ -99,18 +100,22 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   }
 
   private AudioTrack extractTrackFromXml(String videoId, Document document) {
-      for (Element element : document.select(":root > thumb")) {
-          String uploader;
-          if(videoId.matches("so.*")){
-              uploader = element.select("ch_name").first().text();
-          }else{
-              uploader = element.select("user_nickname").first().text();
-          }
-          String title = element.select("title").first().text();
-          long duration = DataFormatTools.durationTextToMillis(element.select("length").first().text());
+    for (Element element : document.select(":root > thumb")) {
+      String uploader = element.selectFirst("user_nickname").text();
+      String title = element.selectFirst("title").text();
+      String thumbnailUrl = element.selectFirst("thumbnail_url").text();
+      long duration = DataFormatTools.durationTextToMillis(element.selectFirst("length").text());
 
-          return new NicoAudioTrack(new AudioTrackInfo(title, uploader, duration, videoId, false, getWatchUrl(videoId)), this);
-      }
+      return new NicoAudioTrack(new AudioTrackInfo(title,
+              uploader,
+              duration,
+              videoId,
+              false,
+              getWatchUrl(videoId),
+              thumbnailUrl,
+              null
+      ), this);
+    }
 
     return null;
   }
@@ -152,7 +157,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
     httpInterfaceManager.configureBuilder(configurator);
   }
 
-  void checkLoggedIn() {
+  void logIn(String email, String password) {
     synchronized (loggedIn) {
       if (loggedIn.get()) {
         return;
@@ -161,8 +166,8 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
       HttpPost loginRequest = new HttpPost("https://secure.nicovideo.jp/secure/login");
 
       loginRequest.setEntity(new UrlEncodedFormEntity(Arrays.asList(
-          new BasicNameValuePair("mail", email),
-          new BasicNameValuePair("password", password)
+              new BasicNameValuePair("mail", email),
+              new BasicNameValuePair("password", password)
       ), StandardCharsets.UTF_8));
 
       try (HttpInterface httpInterface = getHttpInterface()) {
@@ -180,7 +185,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
           }
 
           loggedIn.set(true);
-          
         }
       } catch (IOException e) {
         throw new FriendlyException("Exception when trying to log into NicoNico", SUSPICIOUS, e);
@@ -189,6 +193,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   }
 
   private static String getWatchUrl(String videoId) {
-    return "http://www.nicovideo.jp/watch/" + videoId;
+    return "https://www.nicovideo.jp/watch/" + videoId;
   }
 }

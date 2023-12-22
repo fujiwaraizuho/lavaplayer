@@ -66,6 +66,22 @@ public class JsonBrowser {
     }
   }
 
+  public int asInt(int defaultValue) {
+    if (node != null) {
+      if (node.isNumber()) {
+        return node.numberValue().intValue();
+      } else if (node.isTextual()) {
+        try {
+          return Integer.parseInt(node.textValue());
+        } catch (NumberFormatException ignored) {
+          // Fall through to default value.
+        }
+      }
+    }
+
+    return defaultValue;
+  }
+
   /**
    * Put a value into the map if this instance contains a map.
    * @param key The map entry key
