@@ -30,19 +30,44 @@ public class AudioTrackInfo {
   public final String uri;
 
   /**
-   * @param title Track title
-   * @param author Track author, if known
-   * @param length Length of the track in milliseconds
-   * @param identifier Audio source specific track identifier
-   * @param isStream True if this track is a stream
-   * @param uri URL of the track or path to its file.
+   * URL to thumbnail of the track
    */
-  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri) {
+  public final String artworkUrl;
+  /**
+   * International Standard Recording Code
+   */
+  public final String isrc;
+
+  /**
+   * @param title      Track title
+   * @param author     Track author, if known
+   * @param length     Length of the track in milliseconds
+   * @param identifier Audio source specific track identifier
+   * @param isStream   True if this track is a stream
+   * @param uri        URL of the track or path to its file.
+   * @param artworkUrl Thumbnail of the track
+   * @param isrc       International Standard Recording Code
+   */
+  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri, String artworkUrl, String isrc) {
     this.title = title;
     this.author = author;
     this.length = length;
     this.identifier = identifier;
     this.isStream = isStream;
     this.uri = uri;
+    this.artworkUrl = artworkUrl;
+    this.isrc = isrc;
+  }
+
+  /**
+   * @param title      Track title
+   * @param author     Track author, if known
+   * @param length     Length of the track in milliseconds
+   * @param identifier Audio source specific track identifier
+   * @param isStream   True if this track is a stream
+   * @param uri        URL of the track or path to its file.
+   */
+  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri) {
+    this(title, author, length, identifier, isStream, uri, null, null);
   }
 }
